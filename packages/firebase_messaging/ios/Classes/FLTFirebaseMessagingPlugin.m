@@ -8,8 +8,6 @@
 
 #import "Firebase/Firebase.h"
 
-NSString *const kGCMMessageIDKey = @"gcm.message_id";
-
 #if defined(__IPHONE_10_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
 @interface FLTFirebaseMessagingPlugin () <FIRMessagingDelegate>
 @end
@@ -135,7 +133,7 @@ static NSObject<FlutterPluginRegistrar> *_registrar;
   } else if ([@"configure" isEqualToString:method]) {
     [FIRMessaging messaging].shouldEstablishDirectChannel = true;
     [[UIApplication sharedApplication] registerForRemoteNotifications];
-    if (_launchNotification != nil && _launchNotification[kGCMMessageIDKey]) {
+    if (_launchNotification != nil) {
       [_channel invokeMethod:@"onLaunch" arguments:_launchNotification];
     }
     result(nil);
@@ -200,11 +198,9 @@ static NSObject<FlutterPluginRegistrar> *_registrar;
     NS_AVAILABLE_IOS(10.0) {
   NSDictionary *userInfo = notification.request.content.userInfo;
   // Check to key to ensure we only handle messages from Firebase
-  if (userInfo[kGCMMessageIDKey]) {
-    [[FIRMessaging messaging] appDidReceiveMessage:userInfo];
-    [_channel invokeMethod:@"onMessage" arguments:userInfo];
-    completionHandler(UNNotificationPresentationOptionNone);
-  }
+  [[FIRMessaging messaging] appDidReceiveMessage:userInfo];
+  [_channel invokeMethod:@"onMessage" arguments:userInfo];
+  completionHandler(UNNotificationPresentationOptionNone);
 }
 
 - (void)userNotificationCenter:(UNUserNotificationCenter *)center
